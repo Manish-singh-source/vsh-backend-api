@@ -20,7 +20,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'full_name'   => 'required|string|max:255',
             'email'       => 'required|email|unique:users,email',
-            'phone_number' => 'required|string|max:20|unique:users,phone_number',
+            'phone'       => 'required|string|max:20|unique:users,phone',
             'wing_name'   => 'required|string|max:10',
             'flat_no'     => 'required|string|max:50|unique:users,flat_no,NULL,id,wing_name,' . $request->wing_name,
             'password'    => 'required|string|min:6|confirmed',
@@ -44,7 +44,7 @@ class AuthController extends Controller
             'user_id'      => $userId,
             'full_name'    => $request->full_name,
             'name'         => $request->full_name,
-            'phone_number' => $request->phone_number,
+            'phone' => $request->phone,
             'email'        => $request->email,
             'wing_name'    => $request->wing_name,
             'flat_no'      => $request->flat_no,
@@ -71,9 +71,10 @@ class AuthController extends Controller
         ];
 
         $qrFileName = $user->user_id . '.png';
-        $qrPath = QrCodeService::generateQrForUser($qrPayload, $qrFileName);
+        // $qrPath = QrCodeService::generateQrForUser($qrPayload, $qrFileName);
 
-        $user->qr_code_image = $qrPath;
+        // $user->qr_code_image = $qrPath;
+        $user->qr_code_image = $qrFileName;
         $user->save();
 
         // generate token
@@ -134,7 +135,7 @@ class AuthController extends Controller
     public function sendOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'phone_number' => 'required|string|exists:users,phone_number',
+            'phone' => 'required|string|exists:users,phone',
         ]);
 
         if ($validator->fails()) {
@@ -145,7 +146,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('phone_number', $request->phone_number)->first();
+        $user = User::where('phone', $request->phone)->first();
 
         $otp = rand(100000, 999999);
         $user->otp = (string) $otp;
@@ -164,7 +165,7 @@ class AuthController extends Controller
     public function verifyOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'phone_number' => 'required|string|exists:users,phone_number',
+            'phone' => 'required|string|exists:users,phone',
             'otp'          => 'required|string',
         ]);
 
@@ -176,7 +177,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('phone_number', $request->phone_number)->first();
+        $user = User::where('phone', $request->phone)->first();
 
         if (! $user || $user->otp !== $request->otp) {
             return response()->json([

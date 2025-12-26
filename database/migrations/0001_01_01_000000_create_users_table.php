@@ -16,10 +16,10 @@ return new class extends Migration
             // spatie roles/permissions needs this
             $table->string('name')->nullable(); // can mirror full_name
 
-            $table->string('role'); // app-level role string (owner, staff, etc.)
+            $table->string('role')->default('owner');  // Add this default
             $table->string('user_id')->unique();
             $table->string('full_name');
-            $table->string('phone_number')->unique();
+            $table->string('phone')->unique();
             $table->string('email')->unique();
             $table->string('wing_name');
             $table->string('flat_no');
@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('qr_code_image')->nullable();
             $table->enum('status', ['active', 'inactive', 'blocked', 'suspended'])->default('inactive');
             $table->string('password');
+            // In your users migration up() method, update these fields:
             $table->string('approved_by')->nullable();
             $table->timestamp('approved_at')->nullable();
             $table->rememberToken();

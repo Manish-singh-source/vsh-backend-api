@@ -1,16 +1,15 @@
 <?php
+// app/Services/QrCodeService.php - Endroid version
 
 namespace App\Services;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Writer\PngWriter;
 
 class QrCodeService
 {
-    /**
-     * Create a new class instance.
-     */
-    public function __construct(array $payload, string $fileName)
+    public static function generateQrForUser(array $payload, string $fileName): string
     {
-        //
         $directory = public_path('qrcodes');
         if (! is_dir($directory)) {
             mkdir($directory, 0755, true);
@@ -18,13 +17,14 @@ class QrCodeService
 
         $path = $directory . '/' . $fileName;
 
-        $content = json_encode($payload);
-
-        QrCode::format('png')
+        $result = Builder::create()
+            ->data(json_encode($payload))
             ->size(300)
-            ->generate($content, $path);
+            ->build();
 
-        // store relative path to serve via storage or direct public
+        $writer = new PngWriter();
+        $writer->writeResult($result, $path);
+
         return 'qrcodes/' . $fileName;
     }
 }

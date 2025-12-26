@@ -23,9 +23,23 @@ class User extends Authenticatable implements JWTSubject
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'name',           // Laravel expects this
+        'role',           // REQUIRED - your custom field
+        'user_id',
+        'full_name',
+        'phone',
         'email',
+        'wing_name',
+        'flat_no',
+        'profile_image',
+        'otp',
+        'otp_expiry',
+        'is_verified',
+        'qr_code_image',
+        'status',
         'password',
+        'approved_by',
+        'approved_at',
     ];
 
 
@@ -42,7 +56,7 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    
+
     /**
      * The attributes that should be hidden for serialization.
      *
