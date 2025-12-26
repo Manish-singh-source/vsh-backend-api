@@ -13,12 +13,31 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            // spatie roles/permissions needs this
+            $table->string('name')->nullable(); // can mirror full_name
+
+            $table->string('role'); // app-level role string (owner, staff, etc.)
+            $table->string('user_id')->unique();
+            $table->string('full_name');
+            $table->string('phone_number')->unique();
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('wing_name');
+            $table->string('flat_no');
+            $table->string('profile_image')->nullable();
+            $table->string('otp')->nullable();
+            $table->timestamp('otp_expiry')->nullable();
+            $table->boolean('is_verified')->default(false);
+            $table->string('qr_code_image')->nullable();
+            $table->enum('status', ['active', 'inactive', 'blocked', 'suspended'])->default('inactive');
             $table->string('password');
+            $table->string('approved_by')->nullable();
+            $table->timestamp('approved_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
+
+            // unique wing + flat
+            $table->unique(['wing_name', 'flat_no']);
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
