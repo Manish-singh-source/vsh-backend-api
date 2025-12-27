@@ -12,7 +12,6 @@ class AdminController extends Controller
     {
         $checkAdmin = User::where('user_id', auth('api')->user()->user_id)
             ->whereIn('role', ['admin', 'super admin'])
-            ->where('role', '!=', 'super admin')
             ->first();
 
         if (!$checkAdmin) {
@@ -22,7 +21,7 @@ class AdminController extends Controller
             ], 403);
         }
 
-        $query = User::with('roles');
+        $query = User::with('roles')->where('role', '!=', 'super admin');
 
         if ($request->has('status')) {
             $query->where('status', $request->status);
