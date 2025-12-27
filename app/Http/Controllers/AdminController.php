@@ -4,11 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Resources\UserResource;
 
 class AdminController extends Controller
 {
     public function usersList(Request $request)
     {
+        $checkAdmin = User::where('user_id', auth('api')->user()->user_id)
+            ->whereIn('role', ['admin', 'super admin'])
+            ->where('role', '!=', 'super admin')
+            ->first();
+
+        if (!$checkAdmin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access',
+            ], 403);
+        }
+
         $query = User::with('roles');
 
         if ($request->has('status')) {

@@ -37,10 +37,8 @@ Route::prefix('v1')->group(function () {
 Route::prefix('v1')->middleware('jwt.auth')->group(function () {
     
     // Admin routes
-    Route::middleware('role:admin|super admin')->group(function () {
-        Route::get('admin/users', [AdminController::class, 'usersList']);
-        Route::post('admin/users/{user}/approve', [AdminController::class, 'approveUser']);
-    });
+    Route::get('admin/users', [AdminController::class, 'usersList']);
+    Route::post('admin/users/{user}/approve', [AdminController::class, 'approveUser']);
 
     // Owner routes
     Route::middleware('role:owner')->group(function () {
