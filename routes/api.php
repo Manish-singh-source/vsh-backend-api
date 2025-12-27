@@ -26,3 +26,5 @@ Route::prefix('v1')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index']);                 // /api/v1/dashboard
     });
 });
+
+
