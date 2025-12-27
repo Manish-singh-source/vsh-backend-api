@@ -27,7 +27,7 @@ class UserResource extends JsonResource
             'is_verified' => $this->is_verified,
             'qr_code_image' => $this->qr_code_image ? asset($this->qr_code_image) : null,
             'approved_by' => $this->approved_by,
-            'approved_at' => $this->approved_at?->format('Y-m-d H:i:s'),
+            'approved_at' => $this->approved_at,
         ];
     }
 }
