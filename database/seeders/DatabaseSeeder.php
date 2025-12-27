@@ -37,5 +37,10 @@ class DatabaseSeeder extends Seeder
         foreach ($roles as $role) {
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'api']);
         }
+
+        $this->call([
+            UsersTableSeeder::class,
+            EntriesTableSeeder::class,
+        ]);
     }
 }
