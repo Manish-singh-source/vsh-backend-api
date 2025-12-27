@@ -13,6 +13,17 @@ class StaffController extends Controller
     //
     public function scanQr(Request $request)
     {
+        $checkStaff = User::where('user_id', auth('api')->user()->user_id)
+            ->whereIn('role', ['staff', 'super admin'])
+            ->first();
+
+        if (!$checkStaff) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access',
+            ], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'qr_data' => 'required|string',
             'entry_mode' => 'required|in:gym,vehicle',
@@ -81,6 +92,16 @@ class StaffController extends Controller
 
     public function entriesList(Request $request)
     {
+        $checkStaff = User::where('user_id', auth('api')->user()->user_id)
+            ->whereIn('role', ['staff', 'super admin'])
+            ->first();
+        if (!$checkStaff) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access',
+            ], 403);
+        }
+
         $query = Entry::with(['owner', 'staff'])
             ->whereHas('staff', function ($q) {
                 $q->where('id', auth('api')->id());

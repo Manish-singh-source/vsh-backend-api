@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\QrCodeService;
 
@@ -10,6 +11,17 @@ class OwnerController extends Controller
     //
     public function profile()
     {
+        $checkOwner = User::where('user_id', auth('api')->user()->user_id)
+            ->whereIn('role', ['owner', 'super admin'])
+            ->first();
+
+        if (!$checkOwner) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access',
+            ], 403);
+        }
+
         $user = auth('api')->user();
 
         return response()->json([
@@ -24,6 +36,17 @@ class OwnerController extends Controller
 
     public function refreshQrCode()
     {
+        $checkOwner = User::where('user_id', auth('api')->user()->user_id)
+            ->whereIn('role', ['owner', 'super admin'])
+            ->first();
+
+        if (!$checkOwner) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access',
+            ], 403);
+        }
+
         $user = auth('api')->user();
 
         // Generate fresh QR with current timestamp for security
