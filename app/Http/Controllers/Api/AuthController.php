@@ -71,7 +71,7 @@ class AuthController extends Controller
         ];
 
         $qrFileName = $user->user_id . '.png';
-        // $qrPath = QrCodeService::generateQrForUser($qrPayload, $qrFileName);
+        $qrPath = QrCodeService::generateQrForUser($qrPayload, $qrFileName);
 
         // $user->qr_code_image = $qrPath;
         $user->qr_code_image = $qrFileName;
