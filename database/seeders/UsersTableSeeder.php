@@ -64,7 +64,6 @@ class UsersTableSeeder extends Seeder
                 'flat_no' => $owner[4],
                 'password' => Hash::make('Owner@123'),
                 'status' => 'inactive',
-                'is_verified' => true,
             ]);
         }
 
@@ -78,7 +77,6 @@ class UsersTableSeeder extends Seeder
                 'email' => 'staff' . $i . '@society.com',
                 'password' => Hash::make('Staff@123'),
                 'status' => 'inactive',
-                'is_verified' => true,
             ]);
         }
     }

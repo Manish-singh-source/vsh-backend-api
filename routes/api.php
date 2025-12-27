@@ -27,6 +27,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['jwt.auth'])->group(function () {
         Route::post('users/change-password', [AuthController::class, 'changePassword']); // /api/v1/change-password (you can alias)
         Route::get('dashboard', [DashboardController::class, 'index']);                 // /api/v1/dashboard
+        Route::get('profile', [DashboardController::class, 'profile']);                 // /api/v1/dashboard
     });
 });
 
@@ -35,10 +36,11 @@ Route::prefix('v1')->group(function () {
 // routes/api.php - Add these routes
 
 Route::prefix('v1')->middleware('jwt.auth')->group(function () {
-    
+
     // Admin routes
     Route::get('admin/users', [AdminController::class, 'usersList']);
     Route::post('admin/users/{user}/approve', [AdminController::class, 'approveUser']);
+    Route::post('admin/users/{user}/reject', [AdminController::class, 'rejectUser']);
 
     // Owner routes
     Route::middleware('role:owner')->group(function () {
