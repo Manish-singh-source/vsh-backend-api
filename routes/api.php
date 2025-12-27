@@ -2,6 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\OwnerController;
+use App\Http\Controllers\StaffController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
 
@@ -28,3 +31,26 @@ Route::prefix('v1')->group(function () {
 });
 
 
+
+// routes/api.php - Add these routes
+
+Route::prefix('v1')->middleware('jwt.auth')->group(function () {
+    
+    // Admin routes
+    Route::middleware('role:admin|super admin')->group(function () {
+        Route::get('admin/users', [AdminController::class, 'usersList']);
+        Route::post('admin/users/{user}/approve', [AdminController::class, 'approveUser']);
+    });
+
+    // Owner routes
+    Route::middleware('role:owner')->group(function () {
+        Route::get('owner/profile', [OwnerController::class, 'profile']);
+        Route::post('owner/refresh-qr', [OwnerController::class, 'refreshQrCode']);
+    });
+
+    // Staff routes
+    Route::middleware('role:staff')->group(function () {
+        Route::post('staff/scan-qr', [StaffController::class, 'scanQr']);
+        Route::get('staff/entries', [StaffController::class, 'entriesList']);
+    });
+});
