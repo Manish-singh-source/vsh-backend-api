@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
+
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
@@ -37,5 +38,9 @@ class DatabaseSeeder extends Seeder
         foreach ($roles as $role) {
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'api']);
         }
+
+        $this->call([
+            UsersTableSeeder::class,
+        ]);
     }
 }

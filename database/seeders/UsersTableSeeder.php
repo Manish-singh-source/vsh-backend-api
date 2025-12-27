@@ -18,13 +18,13 @@ class UsersTableSeeder extends Seeder
         // Super Admin
         User::create([
             'role' => 'super admin',
-            'user_id' => 'SA001',
+            'user_id' => 'vsh@sa',
             'full_name' => 'Super Admin',
-            'phone_number' => '9999999991',
-            'email' => 'superadmin@society.com',
+            'phone' => '1234567890',
+            'email' => 'superadmin@gmail.com',
             'wing_name' => 'A',
-            'flat_no' => 'ADMIN',
-            'password' => Hash::make('Admin@123'),
+            'flat_no' => '1304',
+            'password' => Hash::make('Superadmin@123'),
             'status' => 'active',
             'is_verified' => true,
         ]);
@@ -32,12 +32,12 @@ class UsersTableSeeder extends Seeder
         // Admin
         User::create([
             'role' => 'admin',
-            'user_id' => 'AD001',
+            'user_id' => 'AD0001',
             'full_name' => 'Admin User',
-            'phone_number' => '9999999992',
-            'email' => 'admin@society.com',
+            'phone' => '1234567891',
+            'email' => 'admin@gmail.com',
             'wing_name' => 'A',
-            'flat_no' => 'ADMIN2',
+            'flat_no' => '101',
             'password' => Hash::make('Admin@123'),
             'status' => 'active',
             'is_verified' => true,
@@ -45,11 +45,11 @@ class UsersTableSeeder extends Seeder
 
         // 5 Owners
         $owners = [
-            ['Gaurav Sharma', '9876543210', 'owner1@society.com', 'A', '101'],
-            ['Priya Patel', '9876543211', 'owner2@society.com', 'A', '102'],
-            ['Ramesh Kumar', '9876543212', 'owner3@society.com', 'B', '201'],
-            ['Sita Devi', '9876543213', 'owner4@society.com', 'B', '202'],
-            ['Amit Singh', '9876543214', 'owner5@society.com', 'C', '301'],
+            ['Gaurav Sharma', '9876543210', 'owner1@gmail.com', 'A', '101'],
+            ['Priya Patel', '9876543211', 'owner2@gmail.com', 'A', '102'],
+            ['Ramesh Kumar', '9876543212', 'owner3@gmail.com', 'B', '201'],
+            ['Sita Devi', '9876543213', 'owner4@gmail.com', 'B', '202'],
+            ['Amit Singh', '9876543214', 'owner5@gmail.com', 'C', '301'],
         ];
 
         foreach ($owners as $owner) {
@@ -58,12 +58,12 @@ class UsersTableSeeder extends Seeder
                 'role' => 'owner',
                 'user_id' => $userId,
                 'full_name' => $owner[0],
-                'phone_number' => $owner[1],
+                'phone' => $owner[1],
                 'email' => $owner[2],
                 'wing_name' => $owner[3],
                 'flat_no' => $owner[4],
                 'password' => Hash::make('Owner@123'),
-                'status' => 'active',
+                'status' => 'inactive',
                 'is_verified' => true,
             ]);
         }
@@ -74,12 +74,10 @@ class UsersTableSeeder extends Seeder
                 'role' => 'staff',
                 'user_id' => 'ST' . str_pad($i, 3, '0', STR_PAD_LEFT),
                 'full_name' => 'Staff Member ' . $i,
-                'phone_number' => '98888888' . $i,
+                'phone' => '98888888' . $i,
                 'email' => 'staff' . $i . '@society.com',
-                'wing_name' => 'STAFF',
-                'flat_no' => 'S' . $i,
                 'password' => Hash::make('Staff@123'),
-                'status' => 'active',
+                'status' => 'inactive',
                 'is_verified' => true,
             ]);
         }

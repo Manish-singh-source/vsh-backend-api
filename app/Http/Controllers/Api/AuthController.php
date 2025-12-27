@@ -12,6 +12,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -260,9 +261,9 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $token = Str::random(64);
+        $token = Str::random(60);
 
-        \DB::table('password_reset_tokens')->updateOrInsert(
+        DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $request->email],
             [
                 'token' => Hash::make($token),
@@ -294,7 +295,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $record = \DB::table('password_reset_tokens')->where('email', $request->email)->first();
+        $record = DB::table('password_reset_tokens')->where('email', $request->email)->first();
 
         if (! $record || ! Hash::check($request->token, $record->token)) {
             return response()->json([
@@ -307,7 +308,7 @@ class AuthController extends Controller
         $user->password = Hash::make($request->password);
         $user->save();
 
-        \DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
         return response()->json([
             'success' => true,

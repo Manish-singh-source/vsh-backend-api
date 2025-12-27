@@ -21,8 +21,8 @@ return new class extends Migration
             $table->string('full_name');
             $table->string('phone')->unique();
             $table->string('email')->unique();
-            $table->string('wing_name');
-            $table->string('flat_no');
+            $table->string('wing_name')->nullable();
+            $table->string('flat_no')->nullable();
             $table->string('profile_image')->nullable();
             $table->string('otp')->nullable();
             $table->timestamp('otp_expiry')->nullable();
@@ -38,7 +38,7 @@ return new class extends Migration
             $table->softDeletes();
 
             // unique wing + flat
-            $table->unique(['wing_name', 'flat_no']);
+            // $table->unique(['wing_name', 'flat_no']);
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
