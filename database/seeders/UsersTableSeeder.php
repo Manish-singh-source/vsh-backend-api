@@ -38,7 +38,7 @@ class UsersTableSeeder extends Seeder
             'email' => 'admin@gmail.com',
             'wing_name' => 'A',
             'flat_no' => '101',
-            'password' => Hash::make('Admin@123'),
+            'password' => Hash::make('admin@123'),
             'status' => 'active',
             'is_verified' => true,
         ]);
@@ -62,7 +62,7 @@ class UsersTableSeeder extends Seeder
                 'email' => $owner[2],
                 'wing_name' => $owner[3],
                 'flat_no' => $owner[4],
-                'password' => Hash::make('Owner@123'),
+                'password' => Hash::make('owner@123'),
                 'status' => 'inactive',
             ]);
         }
@@ -75,7 +75,7 @@ class UsersTableSeeder extends Seeder
                 'full_name' => 'Staff Member ' . $i,
                 'phone' => '98888888' . $i,
                 'email' => 'staff' . $i . '@society.com',
-                'password' => Hash::make('Staff@123'),
+                'password' => Hash::make('staff@123'),
                 'status' => 'inactive',
             ]);
         }
