@@ -41,7 +41,22 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             UsersTableSeeder::class,
-            EntriesTableSeeder::class,
+
+            // Data seeders
+            VisitorSeeder::class,
+            AdvertisementSeeder::class,
+            NoticeSeeder::class,
+            EquipmentSeeder::class,
+            ServicesSeeder::class,
+            FamilyMemberSeeder::class,
+            EventSeeder::class,
+            GymEntrySeeder::class,
+            GymVisitBookingSeeder::class,
+            GateEntrySeeder::class,
+            BookingSeeder::class,
+            ComplaintSeeder::class,
+            StaffTaskSeeder::class,
+            StaffLeaveRequestSeeder::class,
         ]);
     }
 }

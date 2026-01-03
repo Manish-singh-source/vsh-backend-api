@@ -12,33 +12,55 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            // spatie roles/permissions needs this
-            $table->string('name')->nullable(); // can mirror full_name
 
-            $table->string('role')->default('owner');  // Add this default
-            $table->string('user_id')->unique();
+            $table->id();
+            $table->string('user_code')->unique();
+            
+            // Basic Information
+            $table->string('name')->nullable(); // can mirror full_name
             $table->string('full_name');
             $table->string('phone')->unique();
             $table->string('email')->unique();
-            $table->string('wing_name')->nullable();
-            $table->string('flat_no')->nullable();
             $table->string('profile_image')->nullable();
+            
+            // Role & Permissions
+            $table->enum('role', ['owner', 'tenant', 'admin', 'staff', 'super_admin'])
+                  ->default('owner');
+            
+            // Residency Information
+            $table->string('wing_name')->nullable(); // A, B, C, D, E
+            $table->string('flat_no')->nullable();
+            
+            // Authentication
+            $table->string('password');
+            $table->rememberToken();
+            
+            // Verification
             $table->string('otp')->nullable();
             $table->timestamp('otp_expiry')->nullable();
             $table->boolean('is_verified')->default(false);
+            
+            // Identity
             $table->string('qr_code_image')->nullable();
-            $table->enum('status', ['active', 'inactive', 'blocked', 'suspended'])->default('inactive');
-            $table->string('password');
-            // In your users migration up() method, update these fields:
-            $table->string('approved_by')->nullable();
+            
+            // Status Management
+            $table->enum('status', ['active', 'inactive', 'blocked', 'suspended'])
+                  ->default('inactive');
+            $table->boolean('is_tenant_added')->default(false);
+            
+            // Relationships
+            $table->foreignId('owner_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('approved_at')->nullable();
-            $table->rememberToken();
+            
             $table->timestamps();
             $table->softDeletes();
-
-            // unique wing + flat
-            // $table->unique(['wing_name', 'flat_no']);
+            
+            // Indexes
+            $table->index(['wing_name', 'flat_no']);
+            $table->index(['role', 'status']);
+            $table->index('owner_id');
+            $table->index('approved_by');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

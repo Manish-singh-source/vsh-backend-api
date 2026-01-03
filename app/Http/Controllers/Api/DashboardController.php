@@ -15,11 +15,22 @@ class DashboardController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Dashboard data',
+            'data'      => $user,
+        ]);
+    }
+
+    public function profile()
+    {
+        $user = auth('api')->user();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile data',
             'data'    => [
-                'user'      => $user,
                 'role'      => $user->role,
                 'user_id'   => $user->user_id,
-                'full_name' => $user->full_name,
+                'qr_code'   => $user->qr_code_image,
+                'full name' => $user->full_name,
                 'phone' => $user->phone_number,
                 'email' => $user->email,
                 'wing_name' => $user->wing_name,
@@ -27,25 +38,9 @@ class DashboardController extends Controller
                 'status' => $user->status,
                 'is_verified' => $user->is_verified,
                 'qr_code_image' => $user->qr_code_image ? asset($user->qr_code_image) : null,
-            ],
-        ]);
-    }
-    
-    public function profile()
-    {
-        $user = auth('api')->user();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Dashboard data',
-            'data'    => [
-                'user'      => $user,
-                'role'      => $user->role,
-                'user_id'   => $user->user_id,
-                'qr_code'   => $user->qr_code_image,
-                'full name' => $user->full_name,
-                
-                // add counts / stats as needed
+                'profile_image' => $user->profile_image ? asset($user->profile_image) : null,
+                'approved_by' => $user->approved_by,
+                'approved_at' => $user->approved_at?->format('Y-m-d H:i:s'),
             ],
         ]);
     }

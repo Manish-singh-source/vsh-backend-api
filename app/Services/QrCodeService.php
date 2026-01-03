@@ -28,6 +28,6 @@ class QrCodeService
         // ✅ v5 way to save file
         $result->saveToFile($path);
 
-        return 'qrcodes/' . $fileName;
+        return $path;
     }
 }

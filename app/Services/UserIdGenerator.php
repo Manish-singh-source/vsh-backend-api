@@ -15,6 +15,7 @@ class UserIdGenerator
             'staff' => 'ST',
             'admin' => 'AD',
             'super admin' => 'SA',
+            'super_admin' => 'SA',
             'owner family member' => 'OWAF',
             'owner rental person' => 'OWAR',
             'owner rental family member' => 'OWARF',
@@ -23,14 +24,14 @@ class UserIdGenerator
 
         $wing = strtoupper(substr($wingName, 0, 1));
 
-        // find last user with same prefix+wing and increment
-        $basePrefix = $prefix.$wing;
-        $last = User::where('user_id', 'like', $basePrefix.'%')
-            ->orderBy('user_id', 'desc')
+        // find last user with same prefix+wing and increment (user_code column)
+        $basePrefix = $prefix . $wing;
+        $last = User::where('user_code', 'like', $basePrefix . '%')
+            ->orderBy('user_code', 'desc')
             ->first();
 
         if ($last) {
-            $number = (int) substr($last->user_id, strlen($basePrefix));
+            $number = (int) substr($last->user_code, strlen($basePrefix));
             $number++;
         } else {
             $number = 1;

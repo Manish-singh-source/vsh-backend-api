@@ -15,33 +15,37 @@ class UsersTableSeeder extends Seeder
      */
     public function run(): void
     {
-        // Super Admin
-        User::create([
-            'role' => 'super admin',
-            'user_id' => 'vsh@sa',
-            'full_name' => 'Super Admin',
-            'phone' => '1234567890',
-            'email' => 'superadmin@gmail.com',
-            'wing_name' => 'A',
-            'flat_no' => '1304',
-            'password' => Hash::make('Superadmin@123'),
-            'status' => 'active',
-            'is_verified' => true,
-        ]);
+        // Super Admin (idempotent)
+        User::updateOrCreate(
+            ['user_code' => 'vsh@sa'],
+            [
+                'role' => 'super_admin',
+                'full_name' => 'Super Admin',
+                'phone' => '1234567890',
+                'email' => 'superadmin@gmail.com',
+                'wing_name' => 'A',
+                'flat_no' => '1304',
+                'password' => Hash::make('Superadmin@123'),
+                'status' => 'active',
+                'is_verified' => true,
+            ]
+        );
 
-        // Admin
-        User::create([
-            'role' => 'admin',
-            'user_id' => 'AD0001',
-            'full_name' => 'Admin User',
-            'phone' => '1234567891',
-            'email' => 'admin@gmail.com',
-            'wing_name' => 'A',
-            'flat_no' => '101',
-            'password' => Hash::make('admin@123'),
-            'status' => 'active',
-            'is_verified' => true,
-        ]);
+        // Admin (idempotent)
+        User::updateOrCreate(
+            ['user_code' => 'AD0001'],
+            [
+                'role' => 'admin',
+                'full_name' => 'Admin User',
+                'phone' => '1234567891',
+                'email' => 'admin@gmail.com',
+                'wing_name' => 'A',
+                'flat_no' => '101',
+                'password' => Hash::make('admin@123'),
+                'status' => 'active',
+                'is_verified' => true,
+            ]
+        );
 
         // 5 Owners
         $owners = [
@@ -54,30 +58,36 @@ class UsersTableSeeder extends Seeder
 
         foreach ($owners as $owner) {
             $userId = UserIdGenerator::generate('owner', $owner[3]);
-            User::create([
-                'role' => 'owner',
-                'user_id' => $userId,
-                'full_name' => $owner[0],
-                'phone' => $owner[1],
-                'email' => $owner[2],
-                'wing_name' => $owner[3],
-                'flat_no' => $owner[4],
-                'password' => Hash::make('owner@123'),
-                'status' => 'inactive',
-            ]);
+            // Use email as unique key to avoid duplicate phone/email issues on repeated seeds
+            User::updateOrCreate(
+                ['email' => $owner[2]],
+                [
+                    'user_code' => $userId,
+                    'role' => 'owner',
+                    'full_name' => $owner[0],
+                    'phone' => $owner[1],
+                    'wing_name' => $owner[3],
+                    'flat_no' => $owner[4],
+                    'password' => Hash::make('owner@123'),
+                    'status' => 'inactive',
+                ]
+            );
         }
 
-        // 10 Staff
+        // 10 Staff (idempotent)
         for ($i = 1; $i <= 10; $i++) {
-            User::create([
-                'role' => 'staff',
-                'user_id' => 'ST' . str_pad($i, 3, '0', STR_PAD_LEFT),
-                'full_name' => 'Staff Member ' . $i,
-                'phone' => '98888888' . $i,
-                'email' => 'staff' . $i . '@society.com',
-                'password' => Hash::make('staff@123'),
-                'status' => 'inactive',
-            ]);
+            $code = 'ST' . str_pad($i, 3, '0', STR_PAD_LEFT);
+            User::updateOrCreate(
+                ['user_code' => $code],
+                [
+                    'role' => 'staff',
+                    'full_name' => 'Staff Member ' . $i,
+                    'phone' => '98888888' . $i,
+                    'email' => 'staff' . $i . '@society.com',
+                    'password' => Hash::make('staff@123'),
+                    'status' => 'inactive',
+                ]
+            );
         }
     }
 }

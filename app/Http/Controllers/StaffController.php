@@ -13,7 +13,7 @@ class StaffController extends Controller
     //
     public function scanQr(Request $request)
     {
-        $checkStaff = User::where('user_id', auth('api')->user()->user_id)
+        $checkStaff = User::where('user_code', $request->user_id)
             ->whereIn('role', ['staff', 'super admin'])
             ->first();
 
@@ -25,7 +25,7 @@ class StaffController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'qr_data' => 'required|string',
+            'qr_data' => 'required',
             'entry_mode' => 'required|in:gym,vehicle',
             'entry_type' => 'required|in:in,out',
             'vehicle_number' => 'nullable|string|max:20',
@@ -39,9 +39,28 @@ class StaffController extends Controller
             ], 422);
         }
 
-        $data = json_decode($request->qr_data, true);
+        // qr_data may be a JSON string or an array
+        $qrData = $request->input('qr_data');
 
-        if (! $data || ! isset($data['user_id']) || $data['role'] !== 'owner') {
+        if (is_string($qrData)) {
+            $data = json_decode($qrData, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid QR code format',
+                    'error' => json_last_error_msg(),
+                ], 400);
+            }
+        } elseif (is_array($qrData)) {
+            $data = $qrData;
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid QR code payload',
+            ], 400);
+        }
+
+        if (! isset($data['user_id']) || ($data['role'] ?? null) !== 'owner') {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid QR code or not an owner',

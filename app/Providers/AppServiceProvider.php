@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Models\Visitor;
+use App\Observers\VisitorObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -25,5 +27,8 @@ class AppServiceProvider extends ServiceProvider
         Relation::enforceMorphMap([
             'users' => User::class,
         ]);
+
+        // register visitor observer to index faces on create
+        Visitor::observe(VisitorObserver::class);
     }
 }

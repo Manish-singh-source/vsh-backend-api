@@ -25,7 +25,7 @@ class AuthController extends Controller
             'wing_name'   => 'required|string|max:10',
             'flat_no'     => 'required|string|max:50|unique:users,flat_no,NULL,id,wing_name,' . $request->wing_name,
             'password'    => 'required|string|min:6|confirmed',
-            'role'        => 'required|string|in:owner,staff,admin,super admin,owner family member,owner rental person,owner rental family member',
+            'role'        => 'required|string|in:owner,staff,admin',
         ]);
 
         if ($validator->fails()) {
@@ -36,16 +36,19 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // generate user_id
-        $userId = UserIdGenerator::generate($request->role, $request->wing_name);
+        // generate user code
+        $userCode = UserIdGenerator::generate($request->role, $request->wing_name);
+
+        // normalize DB role value (DB enum uses 'super_admin')
+        $dbRole = $request->role === 'super admin' ? 'super_admin' : $request->role;
 
         // create user
         $user = User::create([
-            'role'         => $request->role,
-            'user_id'      => $userId,
+            'role'         => $dbRole,
+            'user_code'    => $userCode,
             'full_name'    => $request->full_name,
             'name'         => $request->full_name,
-            'phone' => $request->phone,
+            'phone'        => $request->phone,
             'email'        => $request->email,
             'wing_name'    => $request->wing_name,
             'flat_no'      => $request->flat_no,
@@ -54,7 +57,7 @@ class AuthController extends Controller
             'is_verified'  => false,
         ]);
 
-        // assign role (spatie)
+        // assign role (spatie) - use original request value (may include spaces)
         $user->assignRole($request->role);
 
         // generate static membership details
@@ -64,22 +67,27 @@ class AuthController extends Controller
             'title'     => 'Standard Membership',
         ];
 
-        // generate QR code
+        // generate QR code (use user_code)
         $qrPayload = [
-            'user_id'   => $user->user_id,
-            'role'      => $user->role,
-            'membership' => $membership,
+            'user_code'   => $user->user_code,
+            'role'        => $request->role, // presentable role string
+            'membership'  => $membership,
         ];
 
-        $qrFileName = $user->user_id . '.png';
+        $qrFileName = $user->user_code . '.png';
         $qrPath = QrCodeService::generateQrForUser($qrPayload, $qrFileName);
 
-        // $user->qr_code_image = $qrPath;
-        $user->qr_code_image = $qrFileName;
+        $user->qr_code_image = $qrPath;
+        // $user->qr_code_image = $qrFileName;
         $user->save();
 
         // generate token
         $token = JWTAuth::fromUser($user);
+
+        $otp = rand(100000, 999999);
+        $user->otp = (string) $otp;
+        $user->otp_expiry = now()->addMinutes(10);
+        $user->save();
 
         return response()->json([
             'success' => true,
@@ -106,7 +114,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('user_id', $request->login_id)->first();
+        $user = User::where('user_code', $request->login_id)->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             return response()->json([
@@ -197,7 +205,7 @@ class AuthController extends Controller
         $user->is_verified = true;
         $user->otp = null;
         $user->otp_expiry = null;
-        $user->status = 'active'; // optionally activate on first OTP login
+        // $user->status = 'active'; // optionally activate on first OTP login
         $user->save();
 
         $token = JWTAuth::fromUser($user);
@@ -247,10 +255,10 @@ class AuthController extends Controller
         }
     }
 
-    public function forgotPassword(Request $request)
+    public function forgotPasswordSendOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:users,email',
+            'phone' => 'required|string|exists:users,phone',
         ]);
 
         if ($validator->fails()) {
@@ -261,29 +269,71 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $token = Str::random(60);
+        $user = User::where('phone', $request->phone)->first();
+        
+        $otp = rand(1000, 9999);
+        $user->otp = (string) $otp;
+        $user->otp_expiry = now()->addMinutes(10);
+        $user->save();
 
-        DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => $request->email],
-            [
-                'token' => Hash::make($token),
-                'created_at' => now(),
-            ]
-        );
-
-        // TODO: send email with token link
+        // TODO: integrate SMS provider here. DO NOT return OTP in production.
         return response()->json([
             'success' => true,
-            'message' => 'Password reset link sent',
-            'debug_token' => $token, // remove in production
+            'message' => 'OTP sent successfully',
+            'debug_otp' => $otp, // remove in production
+        ]);
+    }
+
+    // OTP: verify and login
+    public function verifyForgotPasswordOtp(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|string|exists:users,phone',
+            'otp'          => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        $user = User::where('phone', $request->phone)->first();
+
+        if (! $user || $user->otp !== $request->otp) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid OTP',
+            ], 400);
+        }
+
+        if (Carbon::parse($user->otp_expiry)->isPast()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'OTP expired',
+            ], 400);
+        }
+
+        $user->otp = null;
+        $user->otp_expiry = null;
+        $user->save();
+
+        $token = JWTAuth::fromUser($user);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'OTP verified successfully',
+            'token'   => $token,
+            'user'    => $user,
         ]);
     }
 
     public function resetPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email'                 => 'required|email|exists:users,email',
-            'token'                 => 'required|string',
+            'phone'                 => 'required|string|exists:users,phone',
             'password'              => 'required|string|min:6|confirmed',
         ]);
 
@@ -295,20 +345,20 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $record = DB::table('password_reset_tokens')->where('email', $request->email)->first();
+        // $record = DB::table('password_reset_tokens')->where('email', $request->email)->first();
 
-        if (! $record || ! Hash::check($request->token, $record->token)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid password reset token',
-            ], 400);
-        }
+        // if (! $record || ! Hash::check($request->token, $record->token)) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Invalid password reset token',
+        //     ], 400);
+        // }
 
-        $user = User::where('email', $request->email)->firstOrFail();
+        $user = User::where('phone', $request->phone)->firstOrFail();
         $user->password = Hash::make($request->password);
         $user->save();
 
-        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+        // DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
         return response()->json([
             'success' => true,
